@@ -5,6 +5,7 @@ import {AggregatorV3Interface} from "chainlink-brownie-contracts/contracts/src/v
 import {PriceConverter} from "./PriceConverter.sol";
 
 contract FundMe {
+    AggregatorV3Interface private s_priceFeed;
     using PriceConverter for uint256;
 
     uint256 public constant MINIMUM_USD = 5e18;
@@ -15,13 +16,14 @@ contract FundMe {
 
     address public immutable i_owner;
 
-    constructor() {
+    constructor(address priceFeed) {
         i_owner = msg.sender;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
     }
 
     function fund() public payable {
         require(
-            msg.value.getConversionRate() >= MINIMUM_USD,
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
             "Didn't send enough ETH!"
         );
         funders.push(msg.sender);
@@ -30,9 +32,8 @@ contract FundMe {
     }
 
     function getVersion() public view returns (uint256) {
-        return
-            AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306)
-                .version();
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeed);
+        return priceFeed.version();
     }
 
     function withdraw() public onlyOwner {
