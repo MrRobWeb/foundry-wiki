@@ -1,3 +1,14 @@
+## Work with foundry
+```shell
+# initialize foundry
+forge --init
+# run local blockchain
+anvil
+# interact with blockchain
+cast ...
+```
+
+
 ## Encrypt reusable private key in ERC-2335
 
 ### Create Key
@@ -32,6 +43,7 @@ cast call 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 "retreive()" --rpc-url $RPC
 ```
 
 ## Zksync
+
 ### install zksync
 ```shell
 curl -L https://raw.githubusercontent.com/matter-labs/foundry-zksync/main/install-foundry-zksync | bash
@@ -39,6 +51,15 @@ curl -L https://raw.githubusercontent.com/matter-labs/foundry-zksync/main/instal
 foundryup-zksync
 #check version
 forge --version
+```
+### build with zksync
+```shell
+forge build --zksync
+```
+
+### using anvil-zksync
+```shell
+anvil-zksync
 ```
 
 
