@@ -10,9 +10,9 @@ contract FundMe {
 
     uint256 public constant MINIMUM_USD = 5e18;
 
-    address[] public funders;
+    address[] private s_funders;
     mapping(address funder => uint256 amountFunded)
-        public addressToAmountFunded;
+        private s_addressToAmountFunded;
 
     address public immutable i_owner;
 
@@ -26,9 +26,9 @@ contract FundMe {
             msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
             "Didn't send enough ETH!"
         );
-        funders.push(msg.sender);
+        s_funders.push(msg.sender);
 
-        addressToAmountFunded[msg.sender] += msg.value;
+        s_addressToAmountFunded[msg.sender] += msg.value;
     }
 
     function getVersion() public view returns (uint256) {
@@ -39,14 +39,14 @@ contract FundMe {
     function withdraw() public onlyOwner {
         for (
             uint256 funderIndex = 0;
-            funderIndex < funders.length;
+            funderIndex < s_funders.length;
             funderIndex++
         ) {
-            address funder = funders[funderIndex];
-            addressToAmountFunded[funder] = 0;
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
         }
         // resett the array
-        funders = new address[](0);
+        s_funders = new address[](0);
         // ***Send token to an address
         // // transfer
         // payable(msg.sender).transfer(address(this).balance);
@@ -73,5 +73,16 @@ contract FundMe {
 
     fallback() external payable {
         fund();
+    }
+
+    // View / Pure functions (Getters)
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) public view returns (uint256) {
+        return s_addressToAmountFunded[fundingAddress];
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funders[index];
     }
 }
