@@ -16,6 +16,11 @@ forge test --mt testPriceFeedVersionIsAccurate --fork-url $SEPOLIA_RPC_URL
 forge coverage --fork-url $SEPOLIA_RPC_URL
 ```
 
+## Calculate gas consumption
+```shell
+forge snapshot --mt testWithdrawFromASingleFunder
+```
+
 ## Script deploying
 ```shell
 forge script script/DeployFundMe.s.sol
