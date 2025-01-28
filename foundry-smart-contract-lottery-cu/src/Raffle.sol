@@ -81,9 +81,9 @@ contract Raffle is
     // @dev The duration of the lottery in seconds
     uint256 private immutable i_interval;
 
-    address private immutable i_vrfCoordinator;
+    // address private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLane;
-    uint64 private immutable i_subscriptionId;
+    uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
 
     address payable[] private s_players;
@@ -96,7 +96,7 @@ contract Raffle is
         uint256 interval,
         address vrfCoordinator,
         bytes32 gasLane,
-        uint64 subscriptionId,
+        uint256 subscriptionId,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = entranceFee;
@@ -174,17 +174,11 @@ contract Raffle is
                 )
             });
 
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
-    }
-
-    /** Getter Function */
-
-    function getEntranceFee() external view returns (uint256) {
-        return i_entranceFee;
+        s_vrfCoordinator.requestRandomWords(request);
     }
 
     function fulfillRandomWords(
-        uint256 requestId,
+        uint256 /* requestId */,
         uint256[] memory randomWords
     ) internal override {
         // checks
@@ -203,5 +197,15 @@ contract Raffle is
         if (!success) {
             revert Raffle__TransferFailed();
         }
+    }
+
+    /** Getter Function */
+
+    function getEntranceFee() external view returns (uint256) {
+        return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
     }
 }
