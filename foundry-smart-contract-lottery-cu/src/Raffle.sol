@@ -47,6 +47,11 @@ pragma solidity ^0.8.18;
 import {VRFV2PlusClient} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/dev/vrf/libraries/VRFV2PlusClient.sol";
 import {VRFConsumerBaseV2Plus} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/dev/vrf/VRFConsumerBaseV2Plus.sol";
 
+interface IRaffleEvents {
+    event EnteredRaffle(address indexed player);
+    event PickedWinner(address winner);
+}
+
 /**
  * @title A sample Raffle Contract
  * @author Robert Weber
@@ -55,7 +60,8 @@ import {VRFConsumerBaseV2Plus} from "lib/chainlink-brownie-contracts/contracts/s
  */
 
 contract Raffle is
-    VRFConsumerBaseV2Plus // Type declarations
+    VRFConsumerBaseV2Plus,
+    IRaffleEvents // Type declarations
 {
     enum RaffleState {
         OPEN, // 0
@@ -70,9 +76,6 @@ contract Raffle is
         uint256 length,
         uint256 raffleState
     );
-
-    event EnteredRaffle(address indexed player);
-    event PickedWinner(address winner);
 
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
@@ -207,5 +210,9 @@ contract Raffle is
 
     function getRaffleState() external view returns (RaffleState) {
         return s_raffleState;
+    }
+
+    function getPlayer(uint256 indexOfPlayer) external view returns (address) {
+        return s_players[indexOfPlayer];
     }
 }
