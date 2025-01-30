@@ -50,6 +50,7 @@ import {VRFConsumerBaseV2Plus} from "lib/chainlink-brownie-contracts/contracts/s
 interface IRaffleEvents {
     event EnteredRaffle(address indexed player);
     event PickedWinner(address winner);
+    event RequestedRaffleWiner(uint256 indexed requestId);
 }
 
 /**
@@ -177,7 +178,9 @@ contract Raffle is
                 )
             });
 
-        s_vrfCoordinator.requestRandomWords(request);
+        uint requestId = s_vrfCoordinator.requestRandomWords(request);
+
+        emit RequestedRaffleWiner(requestId);
     }
 
     function fulfillRandomWords(
@@ -214,5 +217,13 @@ contract Raffle is
 
     function getPlayer(uint256 indexOfPlayer) external view returns (address) {
         return s_players[indexOfPlayer];
+    }
+
+    function getLastTimeStamp() external view returns (uint) {
+        return s_lastTimeStamp;
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
     }
 }
