@@ -106,7 +106,6 @@ contract Raffle is
         i_interval = interval;
         s_lastTimeStamp = block.timestamp;
 
-        // s_vrfCoordinator = vrfCoordinator;
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
@@ -163,6 +162,7 @@ contract Raffle is
                 uint256(s_raffleState)
             );
         }
+        s_raffleState = RaffleState.CALCULATING;
 
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
             .RandomWordsRequest({
