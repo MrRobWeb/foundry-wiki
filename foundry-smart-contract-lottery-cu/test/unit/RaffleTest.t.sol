@@ -5,10 +5,10 @@ import {Test} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {Raffle, IRaffleEvents} from "src/Raffle.sol";
-import {HelperConfig} from "script/HelperConfig.s.sol";
+import {HelperConfig, CodeConstants} from "script/HelperConfig.s.sol";
 import {VRFCoordinatorV2_5Mock} from "lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
-contract RaffleTest is Test, IRaffleEvents {
+contract RaffleTest is Test, IRaffleEvents, CodeConstants {
     Raffle public raffle;
     HelperConfig public helperConfig;
     address public PLAYER = makeAddr("player");
@@ -187,6 +187,13 @@ contract RaffleTest is Test, IRaffleEvents {
         _;
     }
 
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
+
     function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId()
         public
         raffleEnteredAndTimePassed
@@ -208,7 +215,7 @@ contract RaffleTest is Test, IRaffleEvents {
 
     function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(
         uint256 randomRequestId
-    ) public raffleEnteredAndTimePassed {
+    ) public raffleEnteredAndTimePassed skipFork {
         // Arrange
         // Act / Assert
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
@@ -222,6 +229,7 @@ contract RaffleTest is Test, IRaffleEvents {
     function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney()
         public
         raffleEnteredAndTimePassed
+        skipFork
     {
         // Arrange
 
