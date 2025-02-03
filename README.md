@@ -119,7 +119,7 @@ In Foundry, vm is used inside Solidity test contracts to:
 - Control EVM execution (e.g., snapshot/revert state)
 This is only available during testing and does not exist in production Solidity contracts.
 
-### **Common `vm` Cheatcodes in Foundry**
+#### **Common `vm` Cheatcodes in Foundry**
 Foundry provides a set of cheatcodes under the `vm` interface. Here are some commonly used ones:
 
 #### **1. Changing Blockchain State**
@@ -154,7 +154,64 @@ vm.recordLogs();    // Start recording logs
 logs = vm.getRecordedLogs();  // Retrieve logs
 ```
 
-### Mocks
+### Mock Tests in Foundry Solidity
+
+#### What Are Mock Tests?
+
+Mock tests in Foundry (a Solidity testing framework) are used to create fake or simulated contracts that help in unit testing. These mocks allow developers to isolate the functionality of a contract by replacing external dependencies with controlled implementations.
+
+#### Why Use Mocks?
+
+- **Isolation**: Test contracts without relying on real external dependencies.
+- **Control**: Simulate different return values or behaviors to test various scenarios.
+- **Efficiency**: Speed up testing by avoiding expensive operations like interacting with the blockchain.
+
+#### How to Create Mocks in Foundry
+
+Foundry uses Solidity-based unit tests, and you can create mock contracts directly in Solidity or use `vm.mockCall` to mock external contract responses.
+
+#### 1. Creating a Mock Contract
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract MockERC20 {
+    function balanceOf(address account) external pure returns (uint256) {
+        return 1000 * 1e18; // Mock returning a fixed balance
+    }
+}
+```
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+import "forge-std/Test.sol";
+
+contract ExampleTest is Test {
+    address mockToken;
+
+    function setUp() public {
+        mockToken = address(new MockERC20());
+    }
+
+    function testMockBalance() public {
+        vm.mockCall(
+            mockToken, 
+            abi.encodeWithSignature("balanceOf(address)"), 
+            abi.encode(500 * 1e18)
+        );
+
+        (bool success, bytes memory data) = mockToken.call(
+            abi.encodeWithSignature("balanceOf(address)", address(this))
+        );
+        uint256 balance = abi.decode(data, (uint256));
+
+        assertEq(balance, 500 * 1e18, "Mock balance should be 500 tokens");
+    }
+}
+
+```
 
 ### Unit Testing
 
@@ -191,8 +248,57 @@ runs = 256
 
 
 
-### Integration Testing
+### Integration Tests in Foundry (Solidity)
 
+#### What Are Integration Tests?
+Integration tests in Foundry (a Solidity testing framework) ensure that multiple smart contracts and their interactions work as expected in a realistic environment. Unlike unit tests, which focus on isolated functions or contracts, integration tests verify how contracts interact with each other.
+
+#### Why Use Integration Tests?
+- Validate **cross-contract interactions**.
+- Ensure that **complex workflows** function correctly.
+- Detect issues that unit tests might **overlook**.
+- Simulate **real-world contract interactions**.
+
+#### How to Write Integration Tests in Foundry
+Foundry uses the `forge test` command to execute tests written in Solidity. You typically:
+1. Deploy multiple contracts.
+2. Simulate interactions between them.
+3. Assert expected behaviors.
+
+##### Example
+Below is a simple integration test using Foundry's `forge test`:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Test.sol";
+import "../src/Token.sol";
+import "../src/Staking.sol";
+
+contract IntegrationTest is Test {
+    Token token;
+    Staking staking;
+    address user = address(1);
+
+    function setUp() public {
+        token = new Token();
+        staking = new Staking(address(token));
+        token.mint(user, 1000 * 1e18);
+    }
+
+    function testUserCanStakeTokens() public {
+        vm.startPrank(user);
+        token.approve(address(staking), 500 * 1e18);
+        staking.stake(500 * 1e18);
+        vm.stopPrank();
+
+        assertEq(staking.balanceOf(user), 500 * 1e18);
+    }
+}
+```
+#### Conclusion
+Integration tests in Foundry help ensure that multiple smart contracts work together correctly. By leveraging Foundry’s powerful debugging and testing tools, developers can build robust, secure, and reliable Solidity applications.
 
 
 ### Fork Testing - Kind of staging
